@@ -4,13 +4,14 @@
 #include <SoftwareSerial.h>
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
+// MPU6050_6Axis_MotionApps20.h and I2Cdev.h can get from Jeff Rowberg's github: https://github.com/jrowberg/i2cdevlib
 // SoftwareSerial.h is used to read data from GPS without interrupt with the Xbee
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
 #endif
 //Specify the I2C address of MPU6050, default I2C adress is 0x68
 MPU6050 mpu;
-//uncomment the following define in order to get the information you want
+//uncomment the following define in order to get the data you want
 //#define OUTPUT_READABLE_QUATERNION
 //#define OUTPUT_READABLE_EULER
 #define OUTPUT_READABLE_YAWPITCHROLL
@@ -48,11 +49,11 @@ VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measure
 VectorFloat gravity;    // [x, y, z]            gravity vector
 float euler[3];         // [psi, theta, phi]    Euler angle container
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
-
+double gps_coordinate[2]; // first one is latitude(positive for northern, negative for southern), second one is longtitude(positive for eastern, negative for western)
+double gps_height;
+double gps_UTCtime;
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
-char gpsbuffer[64];
-// Initialize buffer for gps data
 char xbeebuffer[10];
 // Initialize buffer for controller
 SoftwareSerial gpsSerial (SOFT_SERIAL_RX,SOFT_SERIAL_TX);
@@ -62,7 +63,7 @@ SoftwareSerial gpsSerial (SOFT_SERIAL_RX,SOFT_SERIAL_TX);
 
 
 
-
+void parse_gps(char buffer[70]);
 void setup() {
 	pinMode(MOTOR_1_PIN, OUTPUT);
 	pinMode(MOTOR_2_PIN, OUTPUT);
@@ -79,17 +80,22 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
- 	if (gpsSerial.available() > 0){//need to change to gpsSerial
-  		for(int i=0;i<64;i++){
-  			gpsbuffer[i] = gpsSerial.read(); // Read data from gps and store them in buffer
- 		    gpsSerial.flush();
- 		}
-	}
-  for(int i;i<64;i++){
+  char gpsbuffer[70];
+// Initialize buffer for gps data
+ 	if (gpsSerial.available() > 0){
+    if(gpsSerial.read()=='$'){
+  	gpsSerial.readBytesUntil("*",gpsbuffer,70);
+    }
+    }
+  for(int i;i<70;i++){
   	Serial.print(gpsbuffer[i]);
-    gpsbuffer[i]=0;
+   //gpsbuffer[i]=" ";
   }
+  Serial.println();
 //	For Testing only
 
+  delay(1000);
+}
+void parse_gps(char buffer[70]){
 
 }
