@@ -1,3 +1,29 @@
+//----------------------------License-----------------------------------------------//
+/*
+MIT License
+
+Copyright (c) 2016 Weili An
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+//-----------------------------Code----------------------------------------------//
 //Core library
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <I2Cdev.h>
@@ -9,7 +35,7 @@
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
 #endif
-//Specify the I2C address of MPU6050, default I2C adress is 0x68
+//Specify the I2C address of MPU6050, default I2C adress is 0x60
 MPU6050 mpu;
 //uncomment the following define in order to get the data you want
 //#define OUTPUT_READABLE_QUATERNION
@@ -17,6 +43,7 @@ MPU6050 mpu;
 #define OUTPUT_READABLE_YAWPITCHROLL
 //Uncomment "OUTPUT_READABLE_REALACCEL" if you want to see acceleration components with gravity removed.
 #define OUTPUT_READABLE_REALACCEL
+//Define pins
 #define INTERRUPT_PIN 2
 #define LED_PIN 12
 #define MOTOR_1_PIN 3
@@ -25,6 +52,7 @@ MPU6050 mpu;
 #define MOTOR_4_PIN 9
 #define SOFT_SERIAL_TX 11
 #define SOFT_SERIAL_RX 12 
+//Define varibles
 int throttle_stick = 0;
 int yaw_stick = 0;
 int pitch_stick = 0;
@@ -63,7 +91,9 @@ SoftwareSerial gpsSerial (SOFT_SERIAL_RX,SOFT_SERIAL_TX);
 
 
 
-void parse_gps(char buffer[70]);
+void parse_gps(char buffer[60]);
+
+//----------------------------Setup Code-----------------------------------------------//
 void setup() {
 	pinMode(MOTOR_1_PIN, OUTPUT);
 	pinMode(MOTOR_2_PIN, OUTPUT);
@@ -78,24 +108,31 @@ void setup() {
 	// Begin both serials
 }
 
+//----------------------------Main Loop-----------------------------------------------//
 void loop() {
   // put your main code here, to run repeatedly:
-  char gpsbuffer[70];
+  char gpsbuffer[60];
 // Initialize buffer for gps data
  	if (gpsSerial.available() > 0){
-    if(gpsSerial.read()=='$'){
-  	gpsSerial.readBytesUntil("*",gpsbuffer,70);
+    while (!(gpsSerial.findUntil("$GPRMC,",'*'))){
+      gpsSerial.flush();
     }
-    }
-  for(int i;i<70;i++){
+    gpsSerial.readBytesUntil("*",gpsbuffer,60);// Problem, if it is N, the function will try to find enough bytes to fill the memory it is given
+
+    }//Cannot read Bytes, just skip this if-clause, need to be solved
+    //used findUntil method to skip other info
+  for(int i;i<60;i++){
   	Serial.print(gpsbuffer[i]);
-   //gpsbuffer[i]=" ";
+   
+    //gpsbuffer[i]=" ";
   }
   Serial.println();
 //	For Testing only
 
   delay(1000);
+  gpsSerial.flush();
+  free(gpsbuffer);
 }
-void parse_gps(char buffer[70]){
+void parse_gps(char buffer[60]){
 
 }
