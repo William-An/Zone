@@ -92,7 +92,7 @@ SoftwareSerial gpsSerial (SOFT_SERIAL_RX,SOFT_SERIAL_TX);
 
 
 
-char* dynamic_array_Serial(SoftwareSerial*,int);
+char* dynamic_array_Serial(SoftwareSerial*,int,char,char);
 //----------------------------Setup Code-----------------------------------------------//
 void setup() {
 	pinMode(MOTOR_1_PIN, OUTPUT);
@@ -112,11 +112,19 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   char* gpsbuffer;
+  gpsSerial.listen();
 // Initialize buffer for gps data
-  Serial.println("Try to communicate");
+/*  Serial.println("Try to communicate");
+  Serial.print("Buffer size: ");
   Serial.println(gpsSerial.available());
- 	if (gpsSerial.available() > 0&&gpsSerial.peek()=='$'){
-   gpsbuffer=dynamic_array_Serial(gpsSerial,100);
+  Serial.print("First byte in buffer: ");
+  Serial.println(gpsSerial.peek());
+  Serial.println(gpsSerial.available());*/
+  //Serial.println(gpsSerial.read());
+  //Serial.println("Waiting for buffer to be filled");
+ //	if (gpsSerial.available() > 0){
+   gpsbuffer=dynamic_array_Serial(gpsSerial,100,'$','*');
+   Serial.println("Succeed in loading buffer with data");
    Serial.println(array_length);
    //Serial.print(gpsbuffer[0]);
    /* while (!(gpsSerial.findUntil("$GPRMC,",'*'))){
@@ -133,23 +141,26 @@ void loop() {
    
     //gpsbuffer[i]=" ";
   }
- 	}
-  else{
+  Serial.println();
+ //	}
+ /* else{
     Serial.println("Fail to communicate!");
   }
- 
+ */
   //Serial.println();
 //	For Testing only
   array_length=1;
-  delay(1000);
-  gpsSerial.flush();
+  //Serial.println("Flushing serial");
+  //gpsSerial.flush();
   free(gpsbuffer);
-  Serial.println("Flushing serial");
+  delay(1000);//Waiting for bytes to fill IO buffer
   
 
 }
-char* dynamic_array_Serial(SoftwareSerial src,int max_length){
+char* dynamic_array_Serial(SoftwareSerial src,int max_length,char start_char,char terminator){
   src.listen();
+  while(src.available()<=0);//Waiting for bytes to fill buffer
+  while(src.read()!=start_char);//Waiting for the start char
   extern int array_length;
   Serial.println("Successful");
   //Serial.println(array_length); Testing
@@ -166,7 +177,7 @@ char* dynamic_array_Serial(SoftwareSerial src,int max_length){
   while(src.available()>0){//Cant go into this loop
     char temp=src.read();
     delay(20);
-    if(temp!='*'){
+    if(temp!=terminator){
       max_array[array_length-1]=temp;
       array_length++;
       //Serial.println(max_array[array_length-1]);
