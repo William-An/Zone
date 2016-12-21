@@ -61,6 +61,7 @@ int motor_1_output;
 int motor_2_output;
 int motor_3_output;
 int motor_4_output;
+int array_length=1;//To store array_length
 bool blinkState = false;
 bool dmpReady = false;
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
@@ -91,8 +92,7 @@ SoftwareSerial gpsSerial (SOFT_SERIAL_RX,SOFT_SERIAL_TX);
 
 
 
-void parse_gps(char buffer[60]);
-
+char* dynamic_array_Serial(SoftwareSerial*,int);
 //----------------------------Setup Code-----------------------------------------------//
 void setup() {
 	pinMode(MOTOR_1_PIN, OUTPUT);
@@ -111,28 +111,91 @@ void setup() {
 //----------------------------Main Loop-----------------------------------------------//
 void loop() {
   // put your main code here, to run repeatedly:
-  char gpsbuffer[60];
+  char* gpsbuffer;
 // Initialize buffer for gps data
- 	if (gpsSerial.available() > 0){
-    while (!(gpsSerial.findUntil("$GPRMC,",'*'))){
+  Serial.println("Try to communicate");
+  Serial.println(gpsSerial.available());
+ 	if (gpsSerial.available() > 0&&gpsSerial.peek()=='$'){
+   gpsbuffer=dynamic_array_Serial(gpsSerial,100);
+   Serial.println(array_length);
+   //Serial.print(gpsbuffer[0]);
+   /* while (!(gpsSerial.findUntil("$GPRMC,",'*'))){
       gpsSerial.flush();
     }
     gpsSerial.readBytesUntil("*",gpsbuffer,60);// Problem, if it is N, the function will try to find enough bytes to fill the memory it is given
 
     }//Cannot read Bytes, just skip this if-clause, need to be solved
     //used findUntil method to skip other info
-  for(int i;i<60;i++){
+  */
+  //How to return length???
+  for(int i;i<array_length-1;i++){
   	Serial.print(gpsbuffer[i]);
    
     //gpsbuffer[i]=" ";
   }
-  Serial.println();
+ 	}
+  else{
+    Serial.println("Fail to communicate!");
+  }
+ 
+  //Serial.println();
 //	For Testing only
-
+  array_length=1;
   delay(1000);
   gpsSerial.flush();
   free(gpsbuffer);
-}
-void parse_gps(char buffer[60]){
+  Serial.println("Flushing serial");
+  
 
 }
+char* dynamic_array_Serial(SoftwareSerial src,int max_length){
+  src.listen();
+  extern int array_length;
+  Serial.println("Successful");
+  //Serial.println(array_length); Testing
+  if(src.available()>0){
+    Serial.println("Checking IO buffer");
+  //Serial.println(src.peek());
+    Serial.println("Initializing buffer");
+  char*  max_array=(char*)malloc(sizeof(char)*max_length);
+  for(int i=0;i<max_length;i++){
+    max_array[i]=NULL;
+  }
+  Serial.println("Start reading");
+  while(!(src.available()>0));//Waiting for bytes to fill the IO buffer
+  while(src.available()>0){//Cant go into this loop
+    char temp=src.read();
+    delay(20);
+    if(temp!='*'){
+      max_array[array_length-1]=temp;
+      array_length++;
+      //Serial.println(max_array[array_length-1]);
+    }
+    else{
+      Serial.print("Array length: ");
+      Serial.println(array_length);
+      char* result=(char*)malloc(sizeof(char)*array_length);
+      for(int i=0;i<max_length;i++){
+        if(max_array[i]==NULL){
+          free(max_array);//free memory
+          Serial.println("End listening");
+          //Serial.println(result[0]);
+          return result;
+        }
+        else{
+          result[i]=max_array[i];
+          //Serial.print(max_array[i]);
+          //Serial.print(":");
+          //Serial.println(result[i]);
+        }
+      }
+    }
+  }
+  }
+  
+
+ else{
+    return NULL;
+  }
+}
+
