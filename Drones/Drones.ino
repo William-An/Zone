@@ -96,8 +96,9 @@ SoftwareSerial gpsSerial (SOFT_SERIAL_RX, SOFT_SERIAL_TX);
 
 
 
-char* dynamic_array_serial(SoftwareSerial*, int, char, char);
-boolean string_pattern_checker(char*,char*);
+char* dynamic_array_serial(SoftwareSerial*, int, char, char);//serial, maximum storge, start_char, terminator
+char* substring_reader(char*,int,char,char);//Src, maximum, start_char, terminator
+boolean string_pattern_checker(char*,char*);//string, pattern
 //----------------------------Setup Code-----------------------------------------------//
 void setup() {
   //Define all motor pins as output
@@ -117,6 +118,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   char* gpsbuffer;
+  char* gpstime;
   gpsSerial.listen();
   /* Testing message
     Initialize buffer for gps data
@@ -136,16 +138,17 @@ void loop() {
     Serial.print(gpsbuffer[i]);
   }
   Serial.println();
+  gpstime=substring_reader(gpsbuffer,MAX_BUFFER_SIZE,',',',');
   //Serial.println();
   array_length = 1;
   free(gpsbuffer);
   delay(1000);//Waiting for bytes to fill IO buffer
 }
 char* dynamic_array_serial(SoftwareSerial src, int max_length, char start_char, char terminator) {
-  src.listen();
+  src.listen();//Open serial
   while (src.available() <= 10); //Waiting for bytes to fill buffer, set 10 in order to allow more bytes loaded in buffer
   while (src.read() != start_char); //Waiting for the start char
-  extern int array_length;
+  extern int array_length;//Use global varible to store length
   //Serial.println("Successful");
   //Serial.println(array_length); //Testing
   if (src.available() > 0) {
@@ -191,9 +194,27 @@ char* dynamic_array_serial(SoftwareSerial src, int max_length, char start_char, 
   }
   else return NULL;
 }
-boolean string_pattern_checker(char* string,char* pattern){
+
+boolean string_pattern_checker(char* string, char* pattern){
   for(int i=0;i<MAX_BUFFER_SIZE;i++){
     if (pattern[i]==NULL) return true;
     if (pattern[i]!=string[i]) return false;
   }
+}
+
+char* substring_reader(char* src,int max_length,char start_char,char terminator){//Maybe I can use this function to subplace the "while (src.available() > 0)" loop in dynamic_array_serial
+  char* temp=(char*)malloc(sizeof(char) * max_length);
+  int counter=0;
+  int array_length=0;
+  while(src[counter]!=start_char) counter++;//Wait until find the start_char
+  if(src[counter]==NULL) return NULL;//Counldn't find the start_char? Return NULL!
+  while(src[counter]!=terminator){
+    temp[array_length]=src[counter];
+    counter++;
+    array_length++;
+  }
+  char* result=(char*)malloc(sizeof(char) * array_length);
+  for(int i=0;i<array_length;i++) result[i]=temp[i];
+  free(temp);
+  return result;
 }
