@@ -207,12 +207,14 @@ char* substring_reader(char* src,int max_length,char start_char,char terminator)
   int counter=0;
   int array_length=0;
   while(src[counter]!=start_char) counter++;//Wait until find the start_char
+  counter++;//Can remove this line by using advanced approach?
   if(src[counter]==NULL) return NULL;//Counldn't find the start_char? Return NULL!
   while(src[counter]!=terminator){
     temp[array_length]=src[counter];
     counter++;
     array_length++;
   }
+  if(array_length==0) return NULL;//Can remove this line by using advanced approach?
   char* result=(char*)malloc(sizeof(char) * array_length);
   for(int i=0;i<array_length;i++) result[i]=temp[i];
   free(temp);
