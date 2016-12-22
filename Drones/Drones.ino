@@ -139,7 +139,8 @@ void loop() {
   }
   Serial.println();
   gpstime=substring_reader(gpsbuffer,MAX_BUFFER_SIZE,',',',');
-  if(gpstime== NULL) Serial.println("NULL");
+  //Serial.println(gpstime[0]);//Test function substring_reader
+  //if(gpstime== NULL) Serial.println("NULL"); 
   //Serial.println();
   array_length = 1;
   free(gpsbuffer);
