@@ -144,6 +144,7 @@ void loop() {
   //Serial.println();
   array_length = 1;
   free(gpsbuffer);//Free memory that given to temp containter
+  free(gpstime);
   delay(1000);//Waiting for bytes to fill IO buffer
 }
 char* dynamic_array_serial(SoftwareSerial src, int max_length, char start_char, char terminator) {
