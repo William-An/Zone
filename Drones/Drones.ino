@@ -146,5 +146,6 @@ void loop() {
   array_length = 1;
   
   free(gpsbuffer);//Free memory that given to temp containter
+  free(gpstime);
   delay(1000);//Waiting for bytes to fill IO buffer
 }
