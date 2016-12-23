@@ -87,7 +87,7 @@ double gps_height;
 double gps_UTCtime;
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0x00, '\r', '\n' };
-char xbeebuffer[10];
+char* xbeebuffer;
 // Initialize buffer for controller
 SoftwareSerial gpsSerial (SOFT_SERIAL_RX, SOFT_SERIAL_TX);
 
@@ -164,7 +164,7 @@ char* dynamic_array_serial(SoftwareSerial src, int max_length, char start_char, 
     //Serial.println("Start reading");
     while (src.available() > 0) {
       char temp = src.read();
-      delay(20);//This 20ms delay is necessary in order to allow buffer being fill by data from gps
+      delay(20);//This 20ms delay is necessary in order to allow buffer being fill by data from serial
       if (temp != terminator) {
         max_array[array_length - 1] = temp;
         array_length++;
@@ -179,7 +179,7 @@ char* dynamic_array_serial(SoftwareSerial src, int max_length, char start_char, 
             free(max_array);//free memory
             //Serial.println("End listening");
             //Serial.println(result[0]);
-            if(string_pattern_checker(result,GPS_START_PATTERN)){
+            if(string_pattern_checker(result,GPS_START_PATTERN)){//Need to add parameter in dynamic_array_function to subplace this GPS_START_PATTERN
               return result;
             }
             else return NULL;//Not the data we want? Return NULL!
