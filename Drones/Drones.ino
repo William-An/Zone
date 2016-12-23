@@ -29,6 +29,7 @@
 #include <I2Cdev.h>
 #include <SoftwareSerial.h>
 #include "Soft_serial_reader.h"
+#include "String_process.h"
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
 // MPU6050_6Axis_MotionApps20.h and I2Cdev.h can get from Jeff Rowberg's github: https://github.com/jrowberg/i2cdevlib
@@ -139,6 +140,7 @@ void loop() {
   }
   Serial.println();
   gpstime=substring_reader(gpsbuffer,MAX_BUFFER_SIZE,',',',');
+  chars_serial_printer(gpstime);//Print char that shouldn't be printed
   //Serial.println(gpstime[0]);//Test function substring_reader
   //if(gpstime== NULL) Serial.println("NULL"); 
   //Serial.println();

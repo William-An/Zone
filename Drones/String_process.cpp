@@ -20,9 +20,20 @@ char* substring_reader(char* src,int max_length,char start_char,char terminator)
     counter++;
     array_length++;
   }
+  //Serial.println(src);
   if(array_length==0) return NULL;//Can remove this line by using advanced approach?
   char* result=(char*)malloc(sizeof(char) * array_length);//Initialize result pointer
   for(int i=0;i<array_length;i++) result[i]=temp[i];
+  Serial.println(array_length);
   free(temp);//Free memory spend by temp containter
   return result;
+}
+
+void chars_serial_printer(char* src){
+  int i=0;
+  while(src[i]!=NULL) {
+    Serial.print(src[i]);
+    i++;
+  }
+  Serial.println();
 }
