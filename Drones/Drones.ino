@@ -28,6 +28,8 @@
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <I2Cdev.h>
 #include <SoftwareSerial.h>
+#include "Soft_serial_reader.h"
+#include "String_process.h"
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
 // MPU6050_6Axis_MotionApps20.h and I2Cdev.h can get from Jeff Rowberg's github: https://github.com/jrowberg/i2cdevlib
@@ -82,9 +84,9 @@ VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measure
 VectorFloat gravity;    // [x, y, z]            gravity vector
 float euler[3];         // [psi, theta, phi]    Euler angle container
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
-double gps_coordinate[2]; // first one is latitude(positive for northern, negative for southern), second one is longtitude(positive for eastern, negative for western)
+/*double gps_coordinate[2]; // first one is latitude(positive for northern, negative for southern), second one is longtitude(positive for eastern, negative for western)
 double gps_height;
-double gps_UTCtime;
+double gps_UTCtime;*/
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0x00, '\r', '\n' };
 char* xbeebuffer;
@@ -96,9 +98,7 @@ SoftwareSerial gpsSerial (SOFT_SERIAL_RX, SOFT_SERIAL_TX);
 
 
 
-char* dynamic_array_serial(SoftwareSerial*, int, char, char);//serial, maximum storge, start_char, terminator
-char* substring_reader(char*,int,char,char);//Src, maximum, start_char, terminator
-boolean string_pattern_checker(char*,char*);//string, pattern
+
 //----------------------------Setup Code-----------------------------------------------//
 void setup() {
   //Define all motor pins as output
@@ -134,92 +134,20 @@ void loop() {
   gpsbuffer = dynamic_array_serial(gpsSerial, MAX_BUFFER_SIZE , '$', '*');//TTry to read data from gpsSerial
   //Serial.println("Succeed in loading buffer with data");
   //Serial.println(array_length);
+  if(gpsbuffer[0]!=NULL){
   for (int i; i < array_length - 1; i++) {//Print all data in gpsbuffer
     Serial.print(gpsbuffer[i]);
   }
   Serial.println();
   gpstime=substring_reader(gpsbuffer,MAX_BUFFER_SIZE,',',',');
+  chars_serial_printer(gpstime);//Print char that shouldn't be printed
   //Serial.println(gpstime[0]);//Test function substring_reader
   //if(gpstime== NULL) Serial.println("NULL"); 
   //Serial.println();
+  }
   array_length = 1;
+  
   free(gpsbuffer);//Free memory that given to temp containter
   free(gpstime);
   delay(1000);//Waiting for bytes to fill IO buffer
-}
-char* dynamic_array_serial(SoftwareSerial src, int max_length, char start_char, char terminator) {
-  src.listen();//Open serial
-  while (src.available() <= 10); //Waiting for bytes to fill buffer, set 10 in order to allow more bytes loaded in buffer
-  while (src.read() != start_char); //Waiting for the start char
-  extern int array_length;//Use global varible to store length
-  //Serial.println("Successful");
-  //Serial.println(array_length); //Testing
-  if (src.available() > 0) {
-    //Serial.println("Checking IO buffer");
-    //Serial.println(src.peek());
-    //Serial.println("Initializing buffer");
-    char*  max_array = (char*)malloc(sizeof(char) * max_length);
-    for (int i = 0; i < max_length; i++) {
-      max_array[i] = NULL;
-    }
-    //Serial.println("Start reading");
-    while (src.available() > 0) {
-      char temp = src.read();
-      delay(20);//This 20ms delay is necessary in order to allow buffer being fill by data from serial
-      if (temp != terminator) {
-        max_array[array_length - 1] = temp;
-        array_length++;
-        //Serial.println(max_array[array_length-1]);
-      }
-      else {
-        //Serial.print("Array length: ");
-        //Serial.println(array_length);
-        char* result = (char*)malloc(sizeof(char) * array_length);
-        for (int i = 0; i < max_length; i++) {
-          if (max_array[i] == NULL) {
-            free(max_array);//free memory
-            //Serial.println("End listening");
-            //Serial.println(result[0]);
-            if(string_pattern_checker(result,GPS_START_PATTERN)){//Need to add parameter in dynamic_array_function to subplace this GPS_START_PATTERN
-              return result;
-            }
-            else return NULL;//Not the data we want? Return NULL!
-          }
-          else {
-            result[i] = max_array[i];
-            //Serial.print(max_array[i]);
-            //Serial.print(":");
-            //Serial.println(result[i]);
-          }
-        }
-      }
-    }
-  }
-  else return NULL;//Src has no data waiting to read? Return NULL!
-}
-
-boolean string_pattern_checker(char* string, char* pattern){
-  for(int i=0;i<MAX_BUFFER_SIZE;i++){
-    if (pattern[i]==NULL) return true;
-    if (pattern[i]!=string[i]) return false;
-  }
-}
-
-char* substring_reader(char* src,int max_length,char start_char,char terminator){//Maybe I can use this function to subplace the "while (src.available() > 0)" loop in dynamic_array_serial
-  char* temp=(char*)malloc(sizeof(char) * max_length);
-  int counter=0;
-  int array_length=0;
-  while(src[counter]!=start_char) counter++;//Wait until find the start_char
-  counter++;//Can remove this line by using advanced approach?
-  if(src[counter]==NULL) return NULL;//Counldn't find the start_char? Return NULL!
-  while(src[counter]!=terminator){//Fill the acceptable chars into temp containter
-    temp[array_length]=src[counter];
-    counter++;
-    array_length++;
-  }
-  if(array_length==0) return NULL;//Can remove this line by using advanced approach?
-  char* result=(char*)malloc(sizeof(char) * array_length);//Initialize result pointer
-  for(int i=0;i<array_length;i++) result[i]=temp[i];
-  free(temp);//Free memory spend by temp containter
-  return result;
 }
