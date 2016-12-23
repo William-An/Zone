@@ -131,10 +131,10 @@ void loop() {
     Serial.println(gpsSerial.read());
     Serial.println("Waiting for buffer to be filled");*/
 
-  gpsbuffer = dynamic_array_serial(gpsSerial, MAX_BUFFER_SIZE , '$', '*');
+  gpsbuffer = dynamic_array_serial(gpsSerial, MAX_BUFFER_SIZE , '$', '*');//TTry to read data from gpsSerial
   //Serial.println("Succeed in loading buffer with data");
   //Serial.println(array_length);
-  for (int i; i < array_length - 1; i++) {
+  for (int i; i < array_length - 1; i++) {//Print all data in gpsbuffer
     Serial.print(gpsbuffer[i]);
   }
   Serial.println();
@@ -143,7 +143,7 @@ void loop() {
   //if(gpstime== NULL) Serial.println("NULL"); 
   //Serial.println();
   array_length = 1;
-  free(gpsbuffer);
+  free(gpsbuffer);//Free memory that given to temp containter
   delay(1000);//Waiting for bytes to fill IO buffer
 }
 char* dynamic_array_serial(SoftwareSerial src, int max_length, char start_char, char terminator) {
@@ -180,9 +180,9 @@ char* dynamic_array_serial(SoftwareSerial src, int max_length, char start_char, 
             //Serial.println("End listening");
             //Serial.println(result[0]);
             if(string_pattern_checker(result,GPS_START_PATTERN)){
-            return result;
-          }
-          else return NULL;
+              return result;
+            }
+            else return NULL;//Not the data we want? Return NULL!
           }
           else {
             result[i] = max_array[i];
@@ -194,7 +194,7 @@ char* dynamic_array_serial(SoftwareSerial src, int max_length, char start_char, 
       }
     }
   }
-  else return NULL;
+  else return NULL;//Src has no data waiting to read? Return NULL!
 }
 
 boolean string_pattern_checker(char* string, char* pattern){
@@ -211,14 +211,14 @@ char* substring_reader(char* src,int max_length,char start_char,char terminator)
   while(src[counter]!=start_char) counter++;//Wait until find the start_char
   counter++;//Can remove this line by using advanced approach?
   if(src[counter]==NULL) return NULL;//Counldn't find the start_char? Return NULL!
-  while(src[counter]!=terminator){
+  while(src[counter]!=terminator){//Fill the acceptable chars into temp containter
     temp[array_length]=src[counter];
     counter++;
     array_length++;
   }
   if(array_length==0) return NULL;//Can remove this line by using advanced approach?
-  char* result=(char*)malloc(sizeof(char) * array_length);
+  char* result=(char*)malloc(sizeof(char) * array_length);//Initialize result pointer
   for(int i=0;i<array_length;i++) result[i]=temp[i];
-  free(temp);
+  free(temp);//Free memory spend by temp containter
   return result;
 }
