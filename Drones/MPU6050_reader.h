@@ -7,11 +7,10 @@
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
 // MPU6050_6Axis_MotionApps20.h and I2Cdev.h can get from Jeff Rowberg's github: https://github.com/jrowberg/i2cdevlib
-// SoftwareSerial.h is used to read data from GPS without interrupt with the Xbee
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-#include "Wire.h"
+	#include "Wire.h"
 #endif
-//Specify the I2C address of MPU6050, default I2C adress is 0x60
+//Specify the I2C address of MPU6050, default I2C adress is 0x68
 MPU6050 mpu;
 //uncomment the following define in order to get the data you want
 //#define OUTPUT_READABLE_QUATERNION
@@ -21,8 +20,9 @@ MPU6050 mpu;
 #define OUTPUT_READABLE_REALACCEL
 //Define Pins
 #define INTERRUPT_PIN 2
+//MPU control/status vars
 bool blinkState = false;
-bool dmpReady = false;
+bool dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
 uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
@@ -42,4 +42,6 @@ double gps_height;
 double gps_UTCtime;*/
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0x00, '\r', '\n' };
+volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
+void dmpDataReady();
 #endif
