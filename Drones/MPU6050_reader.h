@@ -20,6 +20,11 @@ MPU6050 mpu;
 #define OUTPUT_READABLE_REALACCEL
 //Define Pins
 #define INTERRUPT_PIN 2
+//Define offset(Need to be included in EEPROM or SD card)
+#define XGyroOffset 200
+#define YGyroOffset 70
+#define ZGyroOffset -80
+#define ZAccelOffset 1700
 //MPU control/status vars
 bool blinkState = false;
 bool dmpReady = false;  // set true if DMP init was successful
@@ -44,5 +49,6 @@ double gps_UTCtime;*/
 uint8_t teapotPacket[14] = { '$', 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0x00, '\r', '\n' };
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady();
-void mpuinitialization();
+void mpuInitialization();
+void mpuReader();
 #endif

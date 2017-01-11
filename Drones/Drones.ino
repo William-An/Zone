@@ -24,9 +24,11 @@
 */
 
 //-----------------------------Code----------------------------------------------//
+//Basic lib
 #include <SoftwareSerial.h>
 #include "Soft_serial_reader.h"
 #include "String_process.h"
+#include "MPU6050_reader.h"
 //Define pins
 #define LED_PIN 12
 #define MOTOR_1_PIN 3
@@ -72,11 +74,13 @@ void setup() {
   Serial.begin(9600);
   gpsSerial.begin(9600);
   // Begin both serials
+  mpuInitialization();
 }
 
 //----------------------------Main Loop-----------------------------------------------//
 void loop() {
-  // put your main code here, to run repeatedly:
+  mpuReader();
+  /*
   char* gpsbuffer;
   char* gpstime;
   gpsSerial.listen();
@@ -89,7 +93,7 @@ void loop() {
     Serial.println(gpsSerial.peek());
     Serial.println(gpsSerial.available());
     Serial.println(gpsSerial.read());
-    Serial.println("Waiting for buffer to be filled");*/
+    Serial.println("Waiting for buffer to be filled");*
 
   gpsbuffer = dynamic_array_serial(gpsSerial, MAX_BUFFER_SIZE , '$', '*');//TTry to read data from gpsSerial
   //Serial.println("Succeed in loading buffer with data");
@@ -110,4 +114,5 @@ void loop() {
   free(gpsbuffer);//Free memory that given to temp containter
   free(gpstime);
   delay(1000);//Waiting for bytes to fill IO buffer
+  */
 }
