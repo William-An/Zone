@@ -29,7 +29,7 @@ char* substring_reader(char* src,int max_length,char start_char,char terminator)
   return result;
 }
 
-void chars_serial_printer(char* src){
+void chars_printer(char* src){
   int i=0;
   while(src[i]!=NULL) {
     Serial.print(src[i]);
